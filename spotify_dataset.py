@@ -2,10 +2,12 @@ import pandas as pd
 import ast
 
 # using pandas read_csv function to convert csv files in pandas DataFrame structures
+print("Reading the csv files")
 df_tracks = pd.read_csv('tracks.csv')                              
 df_artists = pd.read_csv('artists.csv')
 
 # create the cleaned csv file for the tracks
+print("Creating the cleaned csv file for the tracks")
 # selecting only the columns we actually need
 df_tracks_clean = df_tracks[['id', 'name', 'explicit', 'release_date']].copy()
 # drop possible duplicate to use later the id as primary key
@@ -16,12 +18,14 @@ df_tracks_clean = df_tracks_clean.dropna(subset = ['id'])
 df_tracks_clean.to_csv('tracks_clean.csv', index = False)
 
 # creating the cleaned csv file for the artists
+print("Creating the cleaned csv file for the artists")
 df_artists_clean = df_artists[['id', 'name', 'popularity', 'followers']].copy()
 df_artists_clean = df_artists_clean.drop_duplicates(subset = ['id'])
 df_artists_clean = df_artists_clean.dropna(subset = ['id'])
 df_artists_clean.to_csv('artists_clean.csv', index = False)
 
 # creating the third table for the relations
+print("Creating the third table for the artists to tracks relation")
 df_tracks_rel = df_tracks[['id', 'id_artists']].copy()
 # modify the string containing all the artists into a list, to be able to select all the artists individually
 # using the ast.literal_eval that distinguishes between real comma and python comma

@@ -14,6 +14,8 @@ df_tracks_clean = df_tracks[['id', 'name', 'explicit', 'release_date']].copy()
 df_tracks_clean = df_tracks_clean.drop_duplicates(subset = ['id'])
 # drop possible row with no value for id
 df_tracks_clean = df_tracks_clean.dropna(subset = ['id'])
+# eliminate ' " ' 
+df_tracks_clean['name'] = df_tracks_clean['name'].astype(str).str.replace('"', '')
 # creating the csv file, index = False to not have the default pandas numbering
 df_tracks_clean.to_csv('tracks_clean.csv', index = False)
 
@@ -22,6 +24,7 @@ print("Creating the cleaned csv file for the artists")
 df_artists_clean = df_artists[['id', 'name', 'popularity', 'followers']].copy()
 df_artists_clean = df_artists_clean.drop_duplicates(subset = ['id'])
 df_artists_clean = df_artists_clean.dropna(subset = ['id'])
+df_artists_clean['name'] = df_artists_clean['name'].astype(str).str.replace('"', '')
 df_artists_clean.to_csv('artists_clean.csv', index = False)
 
 # creating the third table for the relations

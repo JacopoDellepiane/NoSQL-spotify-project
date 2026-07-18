@@ -1,3 +1,4 @@
 *.csv
 dict_artists.json
 .DS_Store
+.env

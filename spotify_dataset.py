@@ -30,6 +30,7 @@ df_artists_clean.to_csv('artists_clean.csv', index = False)
 # creating the third table for the relations
 print("Creating the third table for the artists to tracks relation")
 df_tracks_rel = df_tracks[['id', 'id_artists']].copy()
+df_tracks_rel = df_tracks_rel.dropna(subset = ['id', 'id_artists'])
 # modify the string containing all the artists into a list, to be able to select all the artists individually
 # using the ast.literal_eval that distinguishes between real comma and python comma
 df_tracks_rel['id_artists'] = df_tracks_rel['id_artists'].apply(ast.literal_eval)
@@ -40,6 +41,8 @@ collaborations = collaborations.rename(columns = {
     'id': 'track_id',
     'id_artists': 'artist_id'
 })
-#using dropna to eliminate null rows
-collaborations = collaborations.dropna()
+# check that all the artists in collaborations, and previous in tracks, are in artists_clean
+collaborations = collaborations[collaborations['artist_id'].isin(df_artists_clean['id'])]
+# remove possible duplicate in the artists field that after the explode could generate two identical rows
+collaborations = collaborations.drop_duplicates(subset=['artist_id', 'track_id'])
 collaborations.to_csv('collaborations.csv', index = False)

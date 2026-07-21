@@ -20,7 +20,7 @@ def create_spotify_db(query, description):
     # opening manually the session
     session = driver.session(database = db_name)
     # run the query (f-string for the comment)
-    print(f" Executing: {description}")
+    print(f"Executing: {description}")
     session.run(query)
     # closing manually the session
     session.close()
@@ -76,7 +76,7 @@ try:
         create_spotify_db(query_index_artists, "Create artists indexes")
         create_spotify_db(query_index_tracks, "Create tracks indexes")
     except Exception as e:
-        print("Indexes already created\n")
+        print("Indexes already created")
         
     create_spotify_db(query_relations, "Collaborations import")
     
@@ -84,5 +84,3 @@ try:
 
 finally:
     driver.close()
-
-

@@ -55,8 +55,8 @@ CALL (row) {{
 }} IN TRANSACTIONS OF 10000 ROWS;
 """
 
-query_index_artists = "CREATE INDEX FOR (a:Artist) ON (a.id);"
-query_index_tracks = "CREATE INDEX FOR (t:Track) ON (t.id);"
+query_index_artists = "CREATE INDEX IF NOT EXISTS FOR (a:Artist) ON (a.id);"
+query_index_tracks = "CREATE INDEX IF NOT EXISTS FOR (t:Track) ON (t.id);"
 
 query_relations = f"""
 LOAD CSV WITH HEADERS FROM '{collaborations_csv}' AS row
@@ -69,14 +69,12 @@ CALL (row) {{
 
 try:
     create_spotify_db(query_reset, "Database clean-up for reset")
+    
     create_spotify_db(query_artists, "Artists import")
     create_spotify_db(query_tracks, "Tracks import")
     
-    try:
-        create_spotify_db(query_index_artists, "Create artists indexes")
-        create_spotify_db(query_index_tracks, "Create tracks indexes")
-    except Exception as e:
-        print("Indexes already created")
+    create_spotify_db(query_index_artists, "Create artists indexes")
+    create_spotify_db(query_index_tracks, "Create tracks indexes")
         
     create_spotify_db(query_relations, "Collaborations import")
     

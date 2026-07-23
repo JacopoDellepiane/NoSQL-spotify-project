@@ -58,6 +58,9 @@ CALL (row) {{
 query_index_artists = "CREATE INDEX IF NOT EXISTS FOR (a:Artist) ON (a.id);"
 query_index_tracks = "CREATE INDEX IF NOT EXISTS FOR (t:Track) ON (t.id);"
 
+# pause the script execution till all the indexes are online, to compensate for the asynchronous indexes creation
+query_await_indexes = "CALL db.awaitIndexes();"
+
 query_relations = f"""
 LOAD CSV WITH HEADERS FROM '{collaborations_csv}' AS row
 CALL (row) {{
@@ -69,12 +72,13 @@ CALL (row) {{
 
 try:
     create_spotify_db(query_reset, "Database clean-up for reset")
-    
+
     create_spotify_db(query_artists, "Artists import")
     create_spotify_db(query_tracks, "Tracks import")
     
     create_spotify_db(query_index_artists, "Create artists indexes")
     create_spotify_db(query_index_tracks, "Create tracks indexes")
+    create_spotify_db(query_await_indexes, "Wait that all the indexes are online")
         
     create_spotify_db(query_relations, "Collaborations import")
     

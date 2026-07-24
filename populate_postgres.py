@@ -1,4 +1,3 @@
-import os
 import psycopg2
 
 # configuration parameters
@@ -58,6 +57,9 @@ query_collaborations = """
     );
 """
 
+# creating an index on collaborations to match speed retrieval 
+query_index_collab = "CREATE INDEX idx_collab_track ON collaborations(track_id);"
+
 def setup_rel_spotify_db():
     # connecting to PostgreSQL
     connection = psycopg2.connect(dbname = DB_NAME, user = DB_USER, host = DB_HOST, port = DB_PORT)
@@ -78,6 +80,8 @@ def setup_rel_spotify_db():
         load_csv(cursor, artists_csv, 'artists', "Artists csv imported")
         load_csv(cursor, tracks_csv, 'tracks', "Tracks csv imported")
         load_csv(cursor, collaborations_csv, 'collaborations', "Collaborations csv imported")
+
+        execute_query(cursor, query_index_collab, "Creating index on track_id")
 
     finally:
         cursor.close()

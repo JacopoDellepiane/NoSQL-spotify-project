@@ -55,8 +55,8 @@ CALL (row) {{
 }} IN TRANSACTIONS OF 10000 ROWS;
 """
 
-query_index_artists = "CREATE INDEX IF NOT EXISTS FOR (a:Artist) ON (a.id);"
-query_index_tracks = "CREATE INDEX IF NOT EXISTS FOR (t:Track) ON (t.id);"
+query_index_artists = "CREATE INDEX idx_artists IF NOT EXISTS FOR (a:Artist) ON (a.id);"
+query_index_tracks = "CREATE INDEX idx_track IF NOT EXISTS FOR (t:Track) ON (t.id);"
 
 # pause the script execution till all the indexes are online, to compensate for the asynchronous indexes creation
 query_await_indexes = "CALL db.awaitIndexes();"

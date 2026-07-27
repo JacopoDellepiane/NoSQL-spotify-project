@@ -58,7 +58,7 @@ query_collaborations = """
 """
 
 # creating an index on collaborations to match speed retrieval 
-query_index_collab = "CREATE INDEX idx_collab_track ON collaborations(track_id);"
+#query_index_collab = "CREATE INDEX idx_collab_track ON collaborations(track_id);"
 
 def setup_rel_spotify_db():
     # connecting to PostgreSQL
@@ -81,7 +81,7 @@ def setup_rel_spotify_db():
         load_csv(cursor, tracks_csv, 'tracks', "Tracks csv imported")
         load_csv(cursor, collaborations_csv, 'collaborations', "Collaborations csv imported")
 
-        execute_query(cursor, query_index_collab, "Creating index on track_id")
+       #execute_query(cursor, query_index_collab, "Creating index on track_id")
 
     finally:
         cursor.close()

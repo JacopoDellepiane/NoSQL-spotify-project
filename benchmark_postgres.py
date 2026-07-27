@@ -1,5 +1,7 @@
 import psycopg2
 import time
+import statistics
+import math
 
 # configuration parameters
 DB_USER = "jacopodellepiane"
@@ -17,10 +19,18 @@ query_1_sql = """
     ORDER BY explicit_tracks DESC;
 """
 
+query_2_desc = "Query 2 (Explicit Collaborations of an Artist)"
+query_2_sql = """
+    SELECT a1.name AS main_artist, COUNT(DISTINCT t.id) AS explicit_collab_tracks, ARRAY_AGG(DISTINCT a2.name) AS collaborators
+    FROM artists a1 JOIN collaborations c1 ON a1.id = c1.artist_id JOIN tracks t ON c1.track_id = t.id JOIN collaborations c2 ON t.id = c2.track_id JOIN artists a2 ON c2.artist_id = a2.id
+    WHERE a1.name = 'Drake' AND t.explicit = 1 AND a1.id != a2.id
+    GROUP BY a1.id, a1.name;
+"""
+
 # executing and measuring the queries
-# performing 10 iterations to calculate the average execution time of
-# the 9 remaining iterations after the cold start
-def measure_query(cursor, query, description, iterations = 10):
+# performing 30 iterations to calculate the average execution time of
+# the 29 remaining iterations after the cold start
+def measure_query(cursor, query, description, iterations = 30):
     print(f"Executing: {description}")
     # initializing the array of time results
     execution_times = []
@@ -41,10 +51,27 @@ def measure_query(cursor, query, description, iterations = 10):
 
     # discarding the cold start to calculate the average
     warm_times = execution_times[1:]
-    avg_time = sum(warm_times) / len(warm_times)
+    avg_time = statistics.mean(warm_times)
+    # calculating the median to check for any random spike values that could skew the mean
+    median_time = statistics.median(warm_times)
+    # computing the standard deviation and the coefficient of variation to see how much the values in the iterations differ from each other,
+    # a large dispersion of data leads to a result that is difficult to replicate
+    stdev_time = statistics.stdev(warm_times)
+    cv = stdev_time / avg_time
     
-    print(f"Cold Start (1st execution): {execution_times[0]:.2f} ms")
-    print(f"Warm Start (average 9 executions): {avg_time:.2f} ms\n")
+    print(f"\nCold Start (1st execution): {execution_times[0]:.2f} ms")
+    print(f"Warm Start (average {len(warm_times)} executions): {avg_time:.2f} ms")
+    print(f"Warm Start (median): {median_time:.2f} ms")
+    print(f"Warm Start (stdev): {stdev_time:.2f} ms")
+    print(f"Warm Start (coefficient of variation): {cv:.2%}")
+    if cv > 0.15:
+        print(f"CV > 15%, high variability. Consider more iterations for '{description}'")
+    else:
+        print("Coefficient of variation in the range")
+    if math.isclose(avg_time, median_time, rel_tol = 0.10):
+        print("Mean and median are consistent, no anomalous executions\n")
+    else:
+        print(f"Mean and median diverge more than 10%, likely outlier execution in '{description}'\n")
 
 def benchmark_postgres():
     # connecting to PostgreSQL
@@ -56,6 +83,7 @@ def benchmark_postgres():
     
     try:
         measure_query(cursor, query_1_sql, query_1_desc)
+        measure_query(cursor, query_2_sql, query_2_desc)
 
         print("Postgres benchmark completed")
 

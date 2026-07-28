@@ -34,6 +34,15 @@ query_2_cypher = """
         collect(DISTINCT a2.name) AS collaborators;
 """
 
+query_3_desc = "Query 3 (Top 5 Most Collaborative Artists)"
+query_3_cypher = """
+    MATCH (a1:Artist)-[:HAS_TRACK]->(:Track)<-[:HAS_TRACK]-(a2:Artist)
+    WHERE a1 <> a2
+    RETURN a1.name AS artist_name, count(DISTINCT a2) AS total_collaborators
+    ORDER BY total_collaborators DESC
+    LIMIT 5;
+"""
+
 # executing and measuring the queries
 # performing 30 iterations to calculate the average execution time of
 # the 29 remaining iterations after the cold start
@@ -87,10 +96,10 @@ def measure_query(query, description, iterations = 30):
     else:
         print(f"Mean and median diverge more than 10%, likely outlier execution in '{description}'\n")
         
-
 try:
     measure_query(query_1_cypher, query_1_desc)
     measure_query(query_2_cypher, query_2_desc)
+    measure_query(query_3_cypher, query_3_desc)
     
     print("Neo4j benchmark completed")
 

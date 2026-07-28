@@ -27,6 +27,16 @@ query_2_sql = """
     GROUP BY a1.id, a1.name;
 """
 
+query_3_desc = "Query 3 (Top 5 Most Collaborative Artists)"
+query_3_sql = """
+    SELECT a.name AS artist_name, COUNT(DISTINCT c2.artist_id) AS total_collaborators
+    FROM artists a JOIN collaborations c1 ON a.id = c1.artist_id JOIN collaborations c2 ON c1.track_id = c2.track_id
+    WHERE c1.artist_id != c2.artist_id
+    GROUP BY a.id, a.name
+    ORDER BY total_collaborators DESC
+    LIMIT 5;
+"""
+
 # executing and measuring the queries
 # performing 30 iterations to calculate the average execution time of
 # the 29 remaining iterations after the cold start
@@ -84,6 +94,7 @@ def benchmark_postgres():
     try:
         measure_query(cursor, query_1_sql, query_1_desc)
         measure_query(cursor, query_2_sql, query_2_desc)
+        measure_query(cursor, query_3_sql, query_3_desc)
 
         print("Postgres benchmark completed")
 

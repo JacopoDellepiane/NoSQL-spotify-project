@@ -10,7 +10,7 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 
 # query descriptions and sql
-query_1_desc = "Query 1 (Base Aggregation)"
+query_1_desc = "Query 1 (Popular Artists with the Most Explicit Tracks)"
 query_1_sql = """
     SELECT a.name, AVG(a.followers) as avg_followers, COUNT(t.id) as explicit_tracks 
     FROM artists a JOIN collaborations c ON a.id = c.artist_id JOIN tracks t ON c.track_id = t.id 
@@ -34,6 +34,16 @@ query_3_sql = """
     WHERE c1.artist_id != c2.artist_id
     GROUP BY a.id, a.name
     ORDER BY total_collaborators DESC
+    LIMIT 5;
+"""
+
+query_4_desc = "Query 4 (Most Followed Artist in a Collaboration)"
+query_4_sql = """
+    SELECT a1.name AS more_followed_artist, a1.followers AS artist_followers, COUNT(DISTINCT a2.id) AS artists_beaten
+    FROM artists a1 JOIN collaborations c1 ON c1.artist_id = a1.id JOIN collaborations c2 ON c2.track_id = c1.track_id AND c2.artist_id != c1.artist_id JOIN artists a2 ON a2.id = c2.artist_id
+    WHERE a1.followers > a2.followers
+    GROUP BY a1.id, a1.name, a1.followers
+    ORDER BY artists_beaten DESC
     LIMIT 5;
 """
 
@@ -95,6 +105,7 @@ def benchmark_postgres():
         measure_query(cursor, query_1_sql, query_1_desc)
         measure_query(cursor, query_2_sql, query_2_desc)
         measure_query(cursor, query_3_sql, query_3_desc)
+        measure_query(cursor, query_4_sql, query_4_desc)
 
         print("Postgres benchmark completed")
 

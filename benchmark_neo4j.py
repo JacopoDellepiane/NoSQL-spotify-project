@@ -16,7 +16,7 @@ driver = GraphDatabase.driver(uri, auth=("neo4j", password))
 db_name = 'neo4j'
 
 # query descriptions and cypher
-query_1_desc = "Query 1 (Base Aggregation)"
+query_1_desc = "Query 1 (Popular Artists with the Most Explicit Tracks)"
 query_1_cypher = """
     MATCH (a:Artist)-[:HAS_TRACK]->(t:Track) 
     WHERE a.popularity > 80 AND t.explicit = 1 
@@ -27,11 +27,8 @@ query_1_cypher = """
 query_2_desc = "Query 2 (Explicit Collaborations of an Artist)"
 query_2_cypher = """
     MATCH (a1:Artist {name: 'Drake'})-[:HAS_TRACK]->(t:Track)<-[:HAS_TRACK]-(a2:Artist)
-    WHERE t.explicit = 1
-    RETURN 
-        a1.name AS main_artist, 
-        count(DISTINCT t) AS explicit_collab_tracks, 
-        collect(DISTINCT a2.name) AS collaborators;
+    WHERE t.explicit = 1 AND a1 <> a2
+    RETURN a1.name AS main_artist, count(DISTINCT t) AS explicit_collab_tracks, collect(DISTINCT a2.name) AS collaborators;
 """
 
 query_3_desc = "Query 3 (Top 5 Most Collaborative Artists)"
@@ -40,6 +37,15 @@ query_3_cypher = """
     WHERE a1 <> a2
     RETURN a1.name AS artist_name, count(DISTINCT a2) AS total_collaborators
     ORDER BY total_collaborators DESC
+    LIMIT 5;
+"""
+
+query_4_desc = "Query 4 (Most Followed Artist in a Collaboration)"
+query_4_cypher = """
+    MATCH (a1:Artist)-[:HAS_TRACK]->(:Track)<-[:HAS_TRACK]-(a2:Artist)
+    WHERE a1.followers > a2.followers
+    RETURN a1.name AS more_followed_artist, a1.followers AS artist_followers, count(DISTINCT a2) AS artists_beaten
+    ORDER BY artists_beaten DESC
     LIMIT 5;
 """
 
@@ -100,6 +106,7 @@ try:
     measure_query(query_1_cypher, query_1_desc)
     measure_query(query_2_cypher, query_2_desc)
     measure_query(query_3_cypher, query_3_desc)
+    measure_query(query_4_cypher, query_4_desc)
     
     print("Neo4j benchmark completed")
 

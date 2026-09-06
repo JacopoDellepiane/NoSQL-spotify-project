@@ -49,6 +49,23 @@ query_4_cypher = """
     LIMIT 5;
 """
 
+query_5_desc = "Query 5 (Most Productive Decades)"
+query_5_cypher = """
+    MATCH (t:Track)
+    WHERE t.release_date IS NOT NULL AND size(t.release_date) >= 4
+    RETURN left(t.release_date, 3) + '0s' AS decade, count(*) AS track_count
+    ORDER BY track_count DESC;
+"""
+
+query_6_desc = "Query 6 (3 Hop Collaborator Traversal)"
+query_6_cypher = """
+    MATCH (a1:Artist {name: 'Franco126'})-[:HAS_TRACK]->(:Track)<-[:HAS_TRACK]-(a2:Artist)-[:HAS_TRACK]->(:Track)<-[:HAS_TRACK]-(a3:Artist)-[:HAS_TRACK]->(:Track)<-[:HAS_TRACK]-(a4:Artist)
+    WHERE a1 <> a4 AND a2 <> a4
+    RETURN DISTINCT a4.name AS degree_3_collaborator, a4.popularity AS popularity, a4.id AS artist_id
+    ORDER BY popularity DESC, artist_id
+    LIMIT 5;
+"""
+
 # executing and measuring the queries
 # performing 30 iterations to calculate the average execution time of
 # the 29 remaining iterations after the cold start
@@ -107,6 +124,8 @@ try:
     measure_query(query_2_cypher, query_2_desc)
     measure_query(query_3_cypher, query_3_desc)
     measure_query(query_4_cypher, query_4_desc)
+    measure_query(query_5_cypher, query_5_desc)
+    measure_query(query_6_cypher, query_6_desc)
     
     print("Neo4j benchmark completed")
 

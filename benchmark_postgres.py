@@ -47,6 +47,26 @@ query_4_sql = """
     LIMIT 5;
 """
 
+query_5_desc = "Query 5 (Most Productive Decades)"
+query_5_sql = """
+    SELECT LEFT(release_date, 3) || '0s' AS decade, COUNT(*) AS track_count
+    FROM tracks
+    WHERE release_date IS NOT NULL AND LENGTH(release_date) >= 4
+    GROUP BY decade
+    ORDER BY track_count DESC;
+"""
+
+query_6_desc = "Query 6 (3 Hop Collaborator Traversal)"
+query_6_sql = """
+    SELECT DISTINCT a4.name AS degree_3_collaborator, a4.popularity, a4.id
+    FROM artists a1 JOIN collaborations c1 ON a1.id = c1.artist_id JOIN collaborations c2 ON c1.track_id = c2.track_id AND c1.artist_id != c2.artist_id JOIN artists a2 ON c2.artist_id = a2.id 
+    JOIN collaborations c3 ON a2.id = c3.artist_id JOIN collaborations c4 ON c3.track_id = c4.track_id AND c3.artist_id != c4.artist_id JOIN artists a3 ON c4.artist_id = a3.id 
+    JOIN collaborations c5 ON a3.id = c5.artist_id JOIN collaborations c6 ON c5.track_id = c6.track_id AND c5.artist_id != c6.artist_id JOIN artists a4 ON c6.artist_id = a4.id
+    WHERE a1.name = 'Franco126' AND a1.id != a4.id AND a2.id != a4.id
+    ORDER BY a4.popularity DESC, a4.id
+    LIMIT 5;
+"""
+
 # executing and measuring the queries
 # performing 30 iterations to calculate the average execution time of
 # the 29 remaining iterations after the cold start
@@ -106,6 +126,8 @@ def benchmark_postgres():
         measure_query(cursor, query_2_sql, query_2_desc)
         measure_query(cursor, query_3_sql, query_3_desc)
         measure_query(cursor, query_4_sql, query_4_desc)
+        measure_query(cursor, query_5_sql, query_5_desc)
+        measure_query(cursor, query_6_sql, query_6_desc)
 
         print("Postgres benchmark completed")
 
